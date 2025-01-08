@@ -14,12 +14,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             value
                     = "SELECT * FROM t_order tor WHERE tor.order_code = :orderCode"
     )
-    public Optional<Order> findByCode(@Param("orderCode") String orderCode);
-
-//    @Query(
-//            nativeQuery = true,
-//            value
-//                    = "DELETE FROM t_order tor WHERE tor.order_code = :orderCode RETURNING tor.order_code"
-//    )
-//    public String delete(@Param("orderCode") String orderCode);
+    Optional<Order> findByCode(@Param("orderCode") String orderCode);
 }

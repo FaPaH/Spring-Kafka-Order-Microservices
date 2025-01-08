@@ -43,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
 
             return orderRepository.saveAndFlush(order).getOrderCode();
         } catch (RuntimeException e) {
-            log.error(e.getMessage());
+            log.error("Failed to save order {} {}", orderRequest, e.getMessage());
             return e.getMessage();
         }
     }
@@ -61,7 +61,7 @@ public class OrderServiceImpl implements OrderService {
                     .map(value -> modelMapper.map(value, OrderDto.class))
                     .toList();
         } catch (RuntimeException e) {
-            log.error(e.getMessage());
+            log.error("Failed to get all orders {}", e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -73,7 +73,7 @@ public class OrderServiceImpl implements OrderService {
             log.info("Found order {}", order.get());
             return order.map(value -> modelMapper.map(value, OrderDto.class)).get();
         } catch (RuntimeException e) {
-            log.warn(e.getMessage());
+            log.warn("Failed to find order {}", orderCode);
             return null;
         }
     }
@@ -85,7 +85,7 @@ public class OrderServiceImpl implements OrderService {
             orderRepository.delete(modelMapper.map(this.findByCode(orderCode), Order.class));
             return "Order deleted successfully";
         } catch (NoSuchElementException e) {
-            log.warn(e.getMessage());
+            log.warn("Failed to delete order {}", orderCode);
             return "Order not found";
         }
     }
