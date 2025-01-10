@@ -1,13 +1,13 @@
 package com.fapah.ordermicroservice.service;
 
-import com.fapah.ordermicroservice.dto.OrderRequest;
+import com.fapah.ordermicroservice.dto.OrderCreateEvent;
 import com.fapah.ordermicroservice.dto.OrderDto;
 
 import java.util.List;
 
 public interface OrderService {
 
-    String save(OrderRequest orderRequest);
+    String save(OrderCreateEvent orderCreateEvent);
 
     List<OrderDto> findAll();
 
@@ -19,5 +19,5 @@ public interface OrderService {
 
     String setCanceled(String orderCode);
 
-    void sendMessage(OrderRequest orderRequest);
+    String sendOrderStockRequest(OrderCreateEvent orderCreateEvent);
 }

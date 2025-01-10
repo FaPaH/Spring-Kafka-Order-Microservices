@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderRequest {
+public class OrderCreateEvent {
 
     private String orderId;
 

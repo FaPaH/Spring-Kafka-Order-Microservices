@@ -1,7 +1,7 @@
 package com.fapah.ordermicroservice.service;
 
 import com.fapah.ordermicroservice.dto.OrderDto;
-import com.fapah.ordermicroservice.dto.OrderRequest;
+import com.fapah.ordermicroservice.dto.OrderCreateEvent;
 import com.fapah.ordermicroservice.entity.Order;
 import com.fapah.ordermicroservice.entity.OrderItems;
 import com.fapah.ordermicroservice.repository.OrderRepository;
@@ -25,17 +25,17 @@ public class OrderServiceImpl implements OrderService {
 
     private final ModelMapper modelMapper;
 
-    private final KafkaTemplate<String, OrderRequest> kafkaTemplate;
+    private final KafkaTemplate<String, OrderCreateEvent> kafkaTemplate;
 
     @Override
     @Transactional
-    public String save(OrderRequest orderRequest) {
+    public String save(OrderCreateEvent orderCreateEvent) {
         try {
             log.info("Creating new order");
 
             Order order = new Order();
-            order.setOrderCode(orderRequest.getOrderId());
-            List<OrderItems> orderItems = orderRequest.getOrderItemsDto()
+            order.setOrderCode(orderCreateEvent.getOrderId());
+            List<OrderItems> orderItems = orderCreateEvent.getOrderItemsDto()
                     .stream()
                     .map(orderItemsDto -> modelMapper.map(orderItemsDto, OrderItems.class))
                     .toList();
@@ -47,7 +47,7 @@ public class OrderServiceImpl implements OrderService {
 
             return orderRepository.saveAndFlush(order).getOrderCode();
         } catch (RuntimeException e) {
-            log.warn("Failed to save order {}, {}", orderRequest, e.getMessage());
+            log.warn("Failed to save order {}, {}", orderCreateEvent, e.getMessage());
             return e.getMessage();
         }
     }
@@ -142,15 +142,19 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public void sendMessage(OrderRequest orderRequest) {
+    public String sendOrderStockRequest(OrderCreateEvent orderCreateEvent) {
         try {
             String orderKey = UUID.randomUUID().toString();
 
-            orderRequest.setOrderId(orderKey);
-            SendResult<String, OrderRequest> result = kafkaTemplate
-                    .send("order-created-events-topic", orderKey, orderRequest).get();
+            orderCreateEvent.setOrderId(orderKey);
+            log.info("Sending order event {}", orderCreateEvent);
+            SendResult<String, OrderCreateEvent> result = kafkaTemplate
+                    .send("order-created-events-topic", orderKey, orderCreateEvent).get();
+            log.info("Event sent successfully {}", result.getRecordMetadata());
+            return result.getProducerRecord().value().getOrderId();
         } catch (InterruptedException | ExecutionException e) {
-            log.error(e.getMessage());
+            log.warn("Failed to send order event {} {}", orderCreateEvent, e.getMessage());
+            return "Oops! Something went wrong. Try again later";
         }
     }
 }
