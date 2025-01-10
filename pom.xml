@@ -18,6 +18,7 @@
   <url>http://maven.apache.org</url>
   <modules>
     <module>order-service</module>
+    <module>stock-service</module>
   </modules>
 
   <properties>
