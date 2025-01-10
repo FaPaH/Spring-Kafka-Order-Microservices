@@ -23,7 +23,8 @@ public class OrderController {
     @PostMapping("/createOrder")
     public ResponseEntity<String> createOrder(@RequestBody OrderRequest orderRequest) {
         log.info("Create order request: {}", orderRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Order was created with code: " + orderService.save(orderRequest));
+        orderService.sendMessage(orderRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Checking stock for available goods");
     }
 
     @GetMapping("/getAllOrders")
