@@ -6,7 +6,7 @@ spring:
     import: optional:file:.env[.properties]
   #Postgres properties
   datasource:
-    url: jdbc:postgresql://localhost:${POSTGRESDB_LOCAL_PORT}/${POSTGRESDB_ORDER_DATABASE}
+    url: jdbc:postgresql://localhost:${POSTGRESDB_LOCAL_PORT}/${POSTGRESDB_STOCK_DATABASE}
     username: ${POSTGRESDB_USER}
     password: ${POSTGRESDB_ROOT_PASSWORD}
   jpa:
@@ -35,7 +35,7 @@ spring:
       bootstrap-servers: localhost:${KAFKA_BROKER_1_PORT},localhost:${KAFKA_BROKER_2_PORT}
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      group-id: product-created-events
+      group-id: product-checked-events
       properties:
         "[json.trusted.packages]": "*"
 
@@ -43,4 +43,4 @@ spring:
 
 #Server properties
 server:
-  port: ${SPRING_LOCAL_PORT}
+  port: ${SPRING_LOCAL_PORT_2}
