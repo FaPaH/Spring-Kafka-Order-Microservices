@@ -1,7 +1,7 @@
-package com.fapah.ordermicroservice.handler;
+package com.fapah.stockmicroservice.handler;
 
 import com.fapah.core.event.OrderCreateEvent;
-import com.fapah.ordermicroservice.service.OrderService;
+import com.fapah.stockmicroservice.service.StockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaHandler;
@@ -14,11 +14,11 @@ import org.springframework.stereotype.Component;
 @KafkaListener(topics = "order-checked-events-topic")
 public class OrderRequestHandler {
 
-    private final OrderService orderService;
+    private final StockService stockService;
 
     @KafkaHandler
     public void handle(OrderCreateEvent orderCreateEvent) {
         log.info("Received checked order response: {}", orderCreateEvent.getOrderId());
-        orderService.save(orderCreateEvent);
+        stockService.checkStock(orderCreateEvent);
     }
 }
