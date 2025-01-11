@@ -1,7 +1,8 @@
 package com.fapah.ordermicroservice.service;
 
+import com.fapah.ordermicroservice.event.OrderCreateEvent;
 import com.fapah.ordermicroservice.dto.OrderDto;
-import com.fapah.ordermicroservice.dto.OrderCreateEvent;
+import com.fapah.ordermicroservice.dto.OrderItemsDto;
 import com.fapah.ordermicroservice.entity.Order;
 import com.fapah.ordermicroservice.entity.OrderItems;
 import com.fapah.ordermicroservice.repository.OrderRepository;
@@ -33,15 +34,12 @@ public class OrderServiceImpl implements OrderService {
         try {
             log.info("Creating new order");
 
-            Order order = new Order();
-            order.setOrderCode(orderCreateEvent.getOrderId());
-            List<OrderItems> orderItems = orderCreateEvent.getOrderItemsDto()
-                    .stream()
-                    .map(orderItemsDto -> modelMapper.map(orderItemsDto, OrderItems.class))
-                    .toList();
-            order.setIsCanceled(false);
-            order.setIsReceived(false);
-            order.setOrderItems(orderItems);
+            Order order = Order.builder()
+                    .orderCode(orderCreateEvent.getOrderId())
+                    .orderItems(dtoToEntity(orderCreateEvent.getOrderItemsDto()))
+                    .isCanceled(Boolean.FALSE)
+                    .isReceived(Boolean.FALSE)
+                    .build();
 
             log.info("Saving new order {}", order);
 
@@ -155,6 +153,17 @@ public class OrderServiceImpl implements OrderService {
         } catch (InterruptedException | ExecutionException e) {
             log.warn("Failed to send order event {} {}", orderCreateEvent, e.getMessage());
             return "Oops! Something went wrong. Try again later";
+        }
+    }
+
+    private List<OrderItems> dtoToEntity(List<OrderItemsDto> orderItemsDtoList) {
+        try {
+            return orderItemsDtoList.stream()
+                    .map(orderItemsDto -> modelMapper.map(orderItemsDto, OrderItems.class))
+                    .toList();
+        } catch (RuntimeException e) {
+            log.warn("Failed to map dto {} to entity {}", orderItemsDtoList, e.getMessage());
+            return null;
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.fapah.ordermicroservice.controller;
 
-import com.fapah.ordermicroservice.dto.OrderCreateEvent;
+import com.fapah.ordermicroservice.event.OrderCreateEvent;
 import com.fapah.ordermicroservice.dto.OrderDto;
 import com.fapah.ordermicroservice.service.OrderService;
 import lombok.RequiredArgsConstructor;

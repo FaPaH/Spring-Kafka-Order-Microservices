@@ -1,5 +1,6 @@
-package com.fapah.ordermicroservice.dto;
+package com.fapah.ordermicroservice.event;
 
+import com.fapah.ordermicroservice.dto.OrderItemsDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
