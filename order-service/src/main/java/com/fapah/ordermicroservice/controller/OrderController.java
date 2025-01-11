@@ -2,6 +2,11 @@ package com.fapah.ordermicroservice.controller;
 
 import com.fapah.ordermicroservice.dto.OrderDto;
 import com.fapah.ordermicroservice.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -20,6 +25,9 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    @Tag(name = "post", description = "POST methods of orders")
+    @Operation(summary = "Create order",
+            description = "Create order with unique id and list of products.")
     @PostMapping("/createOrder")
     public ResponseEntity<String> createOrder(@RequestBody OrderCreateEvent orderCreateEvent) {
         log.info("Create order request: {}", orderCreateEvent);
@@ -28,12 +36,14 @@ public class OrderController {
                         + orderService.sendOrderStockRequest(orderCreateEvent));
     }
 
+    @Tag(name = "get", description = "GET methods of orders")
     @GetMapping("/getAllOrders")
     public ResponseEntity<List<OrderDto>> getAllOrders() {
         log.info("Get all orders");
         return ResponseEntity.ok().body(orderService.findAll());
     }
 
+    @Tag(name = "get", description = "GET methods of orders")
     @GetMapping("/getOrderByCode")
     public ResponseEntity<OrderDto> getOrderByCode(@RequestParam String orderCode) {
         MDC.put("requestId", orderCode);
@@ -45,6 +55,11 @@ public class OrderController {
         return ResponseEntity.ok().body(orderService.findByCode(orderCode));
     }
 
+    @Operation(responses = {
+            @ApiResponse(responseCode = "200", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Order not found", content = @Content)
+    })
+    @Tag(name = "post", description = "POST methods of orders")
     @PostMapping("/deleteOrderByCode")
     public ResponseEntity<String> deleteOrderByCode(@RequestParam String orderCode) {
         MDC.put("requestId", orderCode);
@@ -56,6 +71,7 @@ public class OrderController {
         return ResponseEntity.ok().body(orderService.delete(orderCode));
     }
 
+    @Tag(name = "post", description = "POST methods of orders")
     @PostMapping("setReceived")
     public ResponseEntity<String> setReceived(@RequestParam String orderCode) {
         MDC.put("requestId", orderCode);
@@ -63,6 +79,7 @@ public class OrderController {
         return ResponseEntity.ok().body(orderService.setReceived(orderCode));
     }
 
+    @Tag(name = "post", description = "POST methods of orders")
     @PostMapping("setCanceled")
     public ResponseEntity<String> setCanceled(@RequestParam String orderCode) {
         MDC.put("requestId", orderCode);
