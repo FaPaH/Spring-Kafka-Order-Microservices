@@ -22,4 +22,6 @@ public interface StockService {
     String updateProduct(Product product);
 
     OrderCheckedEvent checkStock(OrderCreateEvent order);
+
+    void sendOrderCheckedEvent(OrderCheckedEvent orderCheckedEvent);
 }

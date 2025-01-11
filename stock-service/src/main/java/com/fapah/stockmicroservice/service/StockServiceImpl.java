@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +24,7 @@ public class StockServiceImpl implements StockService {
 
     private final StockRepository stockRepository;
 
-    private final ModelMapper modelMapper;
+    private final KafkaTemplate<String, OrderCheckedEvent> kafkaTemplate;
 
     @Override
     public Product findByName(String name) {
@@ -114,6 +115,19 @@ public class StockServiceImpl implements StockService {
         } catch (RuntimeException e) {
             log.error("Uncaught error while checking stock {}", order, e);
             return new OrderCheckedEvent(order.getOrderId(), Collections.emptyList(), Collections.emptyList());
+        }
+    }
+
+    public void sendOrderCheckedEvent(OrderCheckedEvent orderCheckedEvent) {
+        try {
+
+            log.info("Sending order checked event {}", orderCheckedEvent);
+            SendResult<String, OrderCheckedEvent> result = kafkaTemplate
+                    .send("order-checked-events-topic", orderCheckedEvent.getOrderId(), orderCheckedEvent).get();
+
+            log.info("Event sent successfully {}", result.getRecordMetadata());
+        } catch (InterruptedException | ExecutionException e) {
+            log.error("Failed to send order checked event {} {}", orderCheckedEvent, e.getMessage());
         }
     }
 
