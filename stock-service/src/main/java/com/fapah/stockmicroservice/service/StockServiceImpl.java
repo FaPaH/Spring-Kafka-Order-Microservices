@@ -118,9 +118,9 @@ public class StockServiceImpl implements StockService {
         }
     }
 
+    @Override
     public void sendOrderCheckedEvent(OrderCheckedEvent orderCheckedEvent) {
         try {
-
             log.info("Sending order checked event {}", orderCheckedEvent);
             SendResult<String, OrderCheckedEvent> result = kafkaTemplate
                     .send("order-checked-events-topic", orderCheckedEvent.getOrderId(), orderCheckedEvent).get();

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-@KafkaListener(topics = "order-checked-events-topic")
+@KafkaListener(topics = "order-created-events-topic")
 public class OrderRequestHandler {
 
     private final StockService stockService;
@@ -19,6 +19,6 @@ public class OrderRequestHandler {
     @KafkaHandler
     public void handle(OrderCreateEvent orderCreateEvent) {
         log.info("Received order to check: {}", orderCreateEvent.getOrderId());
-        stockService.checkStock(orderCreateEvent);
+        stockService.sendOrderCheckedEvent(stockService.checkStock(orderCreateEvent));
     }
 }

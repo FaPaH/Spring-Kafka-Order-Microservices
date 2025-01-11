@@ -1,6 +1,7 @@
 package com.fapah.ordermicroservice.service;
 
 import com.fapah.core.dto.ItemsDto;
+import com.fapah.core.event.OrderCheckedEvent;
 import com.fapah.core.event.OrderCreateEvent;
 import com.fapah.ordermicroservice.dto.OrderDto;
 import com.fapah.ordermicroservice.entity.Order;
@@ -30,13 +31,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public String save(OrderCreateEvent orderCreateEvent) {
+    public String save(OrderCheckedEvent orderCheckedEvent) {
         try {
             log.info("Creating new order");
 
             Order order = Order.builder()
-                    .orderCode(orderCreateEvent.getOrderId())
-                    .orderItems(dtoToEntity(orderCreateEvent.getOrderItemsDto()))
+                    .orderCode(orderCheckedEvent.getOrderId())
+                    .orderItems(dtoToEntity(orderCheckedEvent.getInStockItems()))
                     .isCanceled(Boolean.FALSE)
                     .isReceived(Boolean.FALSE)
                     .build();
@@ -45,7 +46,7 @@ public class OrderServiceImpl implements OrderService {
 
             return orderRepository.saveAndFlush(order).getOrderCode();
         } catch (RuntimeException e) {
-            log.error("Failed to save order {}, {}", orderCreateEvent, e.getMessage());
+            log.error("Failed to save order {}, {}", orderCheckedEvent, e.getMessage());
             return e.getMessage();
         }
     }

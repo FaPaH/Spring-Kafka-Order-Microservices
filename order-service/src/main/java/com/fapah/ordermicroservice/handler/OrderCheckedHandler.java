@@ -1,5 +1,6 @@
 package com.fapah.ordermicroservice.handler;
 
+import com.fapah.core.event.OrderCheckedEvent;
 import com.fapah.core.event.OrderCreateEvent;
 import com.fapah.ordermicroservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,8 @@ public class OrderCheckedHandler {
     private final OrderService orderService;
 
     @KafkaHandler
-    public void handle(OrderCreateEvent orderCreateEvent) {
-        log.info("Received checked order response: {}", orderCreateEvent.getOrderId());
-        orderService.save(orderCreateEvent);
+    public void handle(OrderCheckedEvent orderCheckedEvent) {
+        log.info("Received checked order response: {}", orderCheckedEvent.getOrderId());
+        orderService.save(orderCheckedEvent);
     }
 }
