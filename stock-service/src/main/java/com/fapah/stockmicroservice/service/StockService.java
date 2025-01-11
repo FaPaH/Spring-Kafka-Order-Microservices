@@ -1,5 +1,7 @@
 package com.fapah.stockmicroservice.service;
 
+import com.fapah.core.event.OrderCheckedEvent;
+import com.fapah.core.event.OrderCreateEvent;
 import com.fapah.stockmicroservice.entity.Product;
 import com.fapah.stockmicroservice.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,4 +20,6 @@ public interface StockService {
     List<Product> findAllByOrderByNameAsc();
 
     String updateProduct(Product product);
+
+    OrderCheckedEvent checkStock(OrderCreateEvent order);
 }

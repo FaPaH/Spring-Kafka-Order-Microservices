@@ -18,7 +18,7 @@ public class OrderRequestHandler {
 
     @KafkaHandler
     public void handle(OrderCreateEvent orderCreateEvent) {
-        log.info("Received checked order response: {}", orderCreateEvent.getOrderId());
+        log.info("Received order to check: {}", orderCreateEvent.getOrderId());
         stockService.checkStock(orderCreateEvent);
     }
 }

@@ -45,7 +45,7 @@ public class OrderServiceImpl implements OrderService {
 
             return orderRepository.saveAndFlush(order).getOrderCode();
         } catch (RuntimeException e) {
-            log.warn("Failed to save order {}, {}", orderCreateEvent, e.getMessage());
+            log.error("Failed to save order {}, {}", orderCreateEvent, e.getMessage());
             return e.getMessage();
         }
     }
@@ -64,7 +64,7 @@ public class OrderServiceImpl implements OrderService {
                     .map(value -> modelMapper.map(value, OrderDto.class))
                     .toList();
         } catch (RuntimeException e) {
-            log.warn("Failed to get all orders {}", e.getMessage());
+            log.error("Failed to get all orders {}", e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -77,7 +77,7 @@ public class OrderServiceImpl implements OrderService {
             log.info("Found order {}", order.get());
             return order.map(value -> modelMapper.map(value, OrderDto.class)).get();
         } catch (RuntimeException e) {
-            log.warn("Failed to find order {}", orderCode);
+            log.error("Failed to find order {}", orderCode);
             return null;
         }
     }
@@ -112,6 +112,7 @@ public class OrderServiceImpl implements OrderService {
             orderRepository.saveAndFlush(order);
             return "Order received successfully";
         } catch (NoSuchElementException e) {
+            log.warn("Order not found with such code {}", orderCode);
             return "Order not found";
         }
     }
@@ -134,6 +135,7 @@ public class OrderServiceImpl implements OrderService {
             orderRepository.saveAndFlush(order);
             return "Order canceled successfully";
         } catch (NoSuchElementException e) {
+            log.warn("Order not found with such code {}", orderCode);
             return "Order not found";
         }
     }
@@ -149,12 +151,10 @@ public class OrderServiceImpl implements OrderService {
             SendResult<String, OrderCreateEvent> result = kafkaTemplate
                     .send("order-created-events-topic", orderKey, orderCreateEvent).get();
 
-            SendResult<String, OrderCreateEvent> checked = kafkaTemplate
-                    .send("order-checked-events-topic", orderKey, orderCreateEvent).get();
             log.info("Event sent successfully {}", result.getRecordMetadata());
             return result.getProducerRecord().value().getOrderId();
         } catch (InterruptedException | ExecutionException e) {
-            log.warn("Failed to send order event {} {}", orderCreateEvent, e.getMessage());
+            log.error("Failed to send order event {} {}", orderCreateEvent, e.getMessage());
             return "Oops! Something went wrong. Try again later";
         }
     }
@@ -165,7 +165,7 @@ public class OrderServiceImpl implements OrderService {
                     .map(orderItemsDto -> modelMapper.map(orderItemsDto, OrderItems.class))
                     .toList();
         } catch (RuntimeException e) {
-            log.warn("Failed to map dto {} to entity {}", orderItemsDtoList, e.getMessage());
+            log.error("Failed to map dto {} to entity {}", orderItemsDtoList, e.getMessage());
             return null;
         }
     }
