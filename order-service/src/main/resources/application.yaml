@@ -1,0 +1,46 @@
+spring:
+  #Application properties
+  application:
+    name: OrderMicroservice
+  config:
+    import: optional:file:.env[.properties]
+  #Postgres properties
+  datasource:
+    url: jdbc:postgresql://localhost:${POSTGRESDB_LOCAL_PORT}/${POSTGRESDB_DATABASE}
+    username: ${POSTGRESDB_USER}
+    password: ${POSTGRESDB_ROOT_PASSWORD}
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  #Kafka properties
+  kafka:
+    #Kafka producer properties
+    producer:
+      acks: all
+      bootstrap-servers: localhost:${KAFKA_BROKER_1_PORT},localhost:${KAFKA_BROKER_2_PORT}
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        "[delivery.timeout.ms]": "10000"
+        "[linger.ms]": "0"
+        "[request.timeout.ms]": "5000"
+        "[enable.idempotence]": "true"
+        "[max.in.flight.requests.per.connection]": "5"
+    #Kafka consumer properties
+    consumer:
+      bootstrap-servers: localhost:${KAFKA_BROKER_1_PORT},localhost:${KAFKA_BROKER_2_PORT}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: product-created-events
+      properties:
+        "[json.trusted.packages]": "*"
+
+
+
+#Server properties
+server:
+  port: ${SPRING_LOCAL_PORT}

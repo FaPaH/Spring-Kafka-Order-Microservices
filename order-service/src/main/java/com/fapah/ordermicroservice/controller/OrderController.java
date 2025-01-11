@@ -1,6 +1,6 @@
 package com.fapah.ordermicroservice.controller;
 
-import com.fapah.ordermicroservice.dto.OrderRequest;
+import com.fapah.ordermicroservice.dto.OrderCreateEvent;
 import com.fapah.ordermicroservice.dto.OrderDto;
 import com.fapah.ordermicroservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +21,11 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/createOrder")
-    public ResponseEntity<String> createOrder(@RequestBody OrderRequest orderRequest) {
-        log.info("Create order request: {}", orderRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Order was created with code: " + orderService.save(orderRequest));
+    public ResponseEntity<String> createOrder(@RequestBody OrderCreateEvent orderCreateEvent) {
+        log.info("Create order request: {}", orderCreateEvent);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Checking stock for available goods. Your order id: "
+                        + orderService.sendOrderStockRequest(orderCreateEvent));
     }
 
     @GetMapping("/getAllOrders")

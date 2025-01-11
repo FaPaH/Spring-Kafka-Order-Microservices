@@ -1,17 +1,20 @@
 package com.fapah.ordermicroservice.service;
 
-import com.fapah.ordermicroservice.dto.OrderRequest;
 import com.fapah.ordermicroservice.dto.OrderDto;
+import com.fapah.ordermicroservice.dto.OrderCreateEvent;
 import com.fapah.ordermicroservice.entity.Order;
 import com.fapah.ordermicroservice.entity.OrderItems;
 import com.fapah.ordermicroservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
@@ -22,16 +25,17 @@ public class OrderServiceImpl implements OrderService {
 
     private final ModelMapper modelMapper;
 
+    private final KafkaTemplate<String, OrderCreateEvent> kafkaTemplate;
+
     @Override
     @Transactional
-    public String save(OrderRequest orderRequest) {
+    public String save(OrderCreateEvent orderCreateEvent) {
         try {
-            Order order = new Order();
-
             log.info("Creating new order");
 
-            order.setOrderCode(UUID.randomUUID().toString());
-            List<OrderItems> orderItems = orderRequest.getOrderItemsDto()
+            Order order = new Order();
+            order.setOrderCode(orderCreateEvent.getOrderId());
+            List<OrderItems> orderItems = orderCreateEvent.getOrderItemsDto()
                     .stream()
                     .map(orderItemsDto -> modelMapper.map(orderItemsDto, OrderItems.class))
                     .toList();
@@ -43,12 +47,13 @@ public class OrderServiceImpl implements OrderService {
 
             return orderRepository.saveAndFlush(order).getOrderCode();
         } catch (RuntimeException e) {
-            log.error("Failed to save order {} {}", orderRequest, e.getMessage());
+            log.warn("Failed to save order {}, {}", orderCreateEvent, e.getMessage());
             return e.getMessage();
         }
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OrderDto> findAll() {
         try {
             List<Order> orders = orderRepository.findAll();
@@ -61,12 +66,13 @@ public class OrderServiceImpl implements OrderService {
                     .map(value -> modelMapper.map(value, OrderDto.class))
                     .toList();
         } catch (RuntimeException e) {
-            log.error("Failed to get all orders {}", e.getMessage());
+            log.warn("Failed to get all orders {}", e.getMessage());
             return Collections.emptyList();
         }
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderDto findByCode(String orderCode) {
         try {
             Optional<Order> order = orderRepository.findByCode(orderCode);
@@ -95,16 +101,16 @@ public class OrderServiceImpl implements OrderService {
     public String setReceived(String orderCode) {
         try {
             Order order = modelMapper.map(this.findByCode(orderCode), Order.class);
-            if (order.getIsReceived()){
+            if (order.getIsReceived()) {
                 log.info("Order {} is already received", order);
                 return "Order is already received";
-            } else if (order.getIsCanceled()){
+            } else if (order.getIsCanceled()) {
                 log.info("Order {} is canceled. Cant receive canceled orders", order);
                 return "Order is canceled. Cant receive canceled orders";
             }
             order.setIsReceived(Boolean.TRUE);
 
-           log.info("Saving received order {}", order);
+            log.info("Saving received order {}", order);
             orderRepository.saveAndFlush(order);
             return "Order received successfully";
         } catch (NoSuchElementException e) {
@@ -117,10 +123,10 @@ public class OrderServiceImpl implements OrderService {
     public String setCanceled(String orderCode) {
         try {
             Order order = modelMapper.map(this.findByCode(orderCode), Order.class);
-            if (order.getIsReceived()){
+            if (order.getIsReceived()) {
                 log.info("Order {} is received. Cant receive canceled orders", order);
                 return "Order is received. Cant receive canceled orders";
-            } else if (order.getIsCanceled()){
+            } else if (order.getIsCanceled()) {
                 log.info("Order {} is already canceled", order);
                 return "Order is already canceled";
             }
@@ -131,6 +137,24 @@ public class OrderServiceImpl implements OrderService {
             return "Order canceled successfully";
         } catch (NoSuchElementException e) {
             return "Order not found";
+        }
+    }
+
+    @Override
+    @Transactional
+    public String sendOrderStockRequest(OrderCreateEvent orderCreateEvent) {
+        try {
+            String orderKey = UUID.randomUUID().toString();
+
+            orderCreateEvent.setOrderId(orderKey);
+            log.info("Sending order event {}", orderCreateEvent);
+            SendResult<String, OrderCreateEvent> result = kafkaTemplate
+                    .send("order-created-events-topic", orderKey, orderCreateEvent).get();
+            log.info("Event sent successfully {}", result.getRecordMetadata());
+            return result.getProducerRecord().value().getOrderId();
+        } catch (InterruptedException | ExecutionException e) {
+            log.warn("Failed to send order event {} {}", orderCreateEvent, e.getMessage());
+            return "Oops! Something went wrong. Try again later";
         }
     }
 }
