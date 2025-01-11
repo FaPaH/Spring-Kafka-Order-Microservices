@@ -3,6 +3,7 @@ package com.fapah.stockmicroservice.service;
 import com.fapah.stockmicroservice.entity.Product;
 import com.fapah.stockmicroservice.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StockServiceImpl implements StockService {
 
     private final StockRepository stockRepository;
@@ -22,6 +24,7 @@ public class StockServiceImpl implements StockService {
         try {
             return stockRepository.getProductsByName(name);
         } catch (NoSuchElementException e) {
+            log.error("No such element with name {} in db", name, e);
             return null;
         }
     }
@@ -30,8 +33,10 @@ public class StockServiceImpl implements StockService {
     public String deleteByName(String name) {
         try {
             stockRepository.deleteProductByName(name);
+            log.info("Product with name {} has been deleted", name);
             return "Stock deleted successfully";
         } catch (NoSuchElementException e) {
+            log.error("No such element with name {} in db", name, e);
             return "No such product";
         }
     }
@@ -42,8 +47,10 @@ public class StockServiceImpl implements StockService {
             product.setName(regexName(product.getName()));
             return stockRepository.saveAndFlush(product).getName();
         } catch (DataIntegrityViolationException e) {
+            log.error("Duplicate product {}", product, e);
             return "Duplicate product";
         } catch (RuntimeException e) {
+            log.error("Uncaught error while saving product {}", product, e);
             return "Error while creating product";
         }
     }
@@ -52,8 +59,10 @@ public class StockServiceImpl implements StockService {
     public List<Product> findAllByOrderByNameAsc() {
         List<Product> products = stockRepository.findAllByOrderByNameAsc();
         if (products.isEmpty()) {
+            log.error("No products found");
             return Collections.emptyList();
         }
+        log.info("Found {} products", products.size());
         return products;
     }
 
@@ -62,9 +71,10 @@ public class StockServiceImpl implements StockService {
     public String updateProduct(Product product) {
         try {
             stockRepository.updateProductPriceByName(regexName(product.getName()), product.getPrice(), product.getQuantity());
+            log.info("Product with name {} has been updated to {}", product.getName(), product);
             return "Product updated successfully";
         } catch (RuntimeException e) {
-            System.out.println(e.getMessage());
+            log.error("Uncaught error while updating product {}", product, e);
             return "Error while creating product";
         }
     }
