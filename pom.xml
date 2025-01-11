@@ -19,6 +19,7 @@
   <modules>
     <module>order-service</module>
     <module>stock-service</module>
+    <module>core</module>
   </modules>
 
   <properties>

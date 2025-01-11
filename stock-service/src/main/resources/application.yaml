@@ -33,13 +33,13 @@ spring:
     #Kafka consumer properties
     consumer:
       bootstrap-servers: localhost:${KAFKA_BROKER_1_PORT},localhost:${KAFKA_BROKER_2_PORT}
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       group-id: product-checked-events
       properties:
-        "[json.trusted.packages]": "*"
-
-
+        spring.json.trusted.packages: '*'
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
 
 #Server properties
 server:

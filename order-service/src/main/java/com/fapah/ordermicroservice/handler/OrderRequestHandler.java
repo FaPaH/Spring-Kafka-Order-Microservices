@@ -1,6 +1,6 @@
 package com.fapah.ordermicroservice.handler;
 
-import com.fapah.ordermicroservice.event.OrderCreateEvent;
+import com.fapah.core.event.OrderCreateEvent;
 import com.fapah.ordermicroservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,6 +1,6 @@
 package com.fapah.ordermicroservice.service;
 
-import com.fapah.ordermicroservice.event.OrderCreateEvent;
+import com.fapah.core.event.OrderCreateEvent;
 import com.fapah.ordermicroservice.dto.OrderDto;
 
 import java.util.List;

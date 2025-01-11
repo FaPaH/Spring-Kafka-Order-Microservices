@@ -1,8 +1,8 @@
 package com.fapah.ordermicroservice.service;
 
-import com.fapah.ordermicroservice.event.OrderCreateEvent;
+import com.fapah.core.dto.ItemsDto;
+import com.fapah.core.event.OrderCreateEvent;
 import com.fapah.ordermicroservice.dto.OrderDto;
-import com.fapah.ordermicroservice.dto.OrderItemsDto;
 import com.fapah.ordermicroservice.entity.Order;
 import com.fapah.ordermicroservice.entity.OrderItems;
 import com.fapah.ordermicroservice.repository.OrderRepository;
@@ -148,6 +148,9 @@ public class OrderServiceImpl implements OrderService {
             log.info("Sending order event {}", orderCreateEvent);
             SendResult<String, OrderCreateEvent> result = kafkaTemplate
                     .send("order-created-events-topic", orderKey, orderCreateEvent).get();
+
+            SendResult<String, OrderCreateEvent> checked = kafkaTemplate
+                    .send("order-checked-events-topic", orderKey, orderCreateEvent).get();
             log.info("Event sent successfully {}", result.getRecordMetadata());
             return result.getProducerRecord().value().getOrderId();
         } catch (InterruptedException | ExecutionException e) {
@@ -156,7 +159,7 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private List<OrderItems> dtoToEntity(List<OrderItemsDto> orderItemsDtoList) {
+    private List<OrderItems> dtoToEntity(List<ItemsDto> orderItemsDtoList) {
         try {
             return orderItemsDtoList.stream()
                     .map(orderItemsDto -> modelMapper.map(orderItemsDto, OrderItems.class))
