@@ -1,0 +1,50 @@
+version: "3.8"
+
+name: order-service
+
+services:
+  order-service:
+    container_name: order-service
+    build: .
+    #restart: on-failure
+    env_file: .env
+    networks:
+      - order-service
+    ports:
+      - ${SPRING_DOCKER_ORDER_SERVICE_PORT}:${SPRING_LOCAL_ORDER_SERVICE_PORT}
+    environment:
+      SPRING_APPLICATION_JSON: '{ 
+      
+        "spring.datasource.url"  : "jdbc:postgresql://order-postgresdb:${POSTGRESDB_DOCKER_ORDERDB_PORT}/${POSTGRES_ORDER_DATABASE}",
+        "spring.datasource.username" : "${POSTGRESDB_USER}",
+        "spring.datasource.password" : "${POSTGRESDB_ROOT_PASSWORD}",
+        "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
+        "spring.jpa.hibernate.ddl-auto" : "update",
+
+        "spring.kafka.producer.acks" : "all",
+        "spring.kafka.producer.bootstrap-servers" : "${DOCKER_HOST_IP:-localhost}:${KAFKA_BROKER_1_EXTERNAL_PORT},${DOCKER_HOST_IP:-localhost}:${KAFKA_BROKER_2_EXTERNAL_PORT},${DOCKER_HOST_IP:-localhost}:${KAFKA_BROKER_3_EXTERNAL_PORT}",
+        "spring.kafka.producer.key-serializer" : "org.apache.kafka.common.serialization.StringSerializer",
+        "spring.kafka.producer.value-serializer" : "org.springframework.kafka.support.serializer.JsonSerializer",
+        "spring.kafka.producer.properties.delivery.timeout.ms" : "10000",
+        "spring.kafka.producer.properties.linger.ms" : "0",
+        "spring.kafka.producer.properties.request.timeout.ms" : "5000",
+        "spring.kafka.producer.properties.enable.idempotence" : "true",
+        "spring.kafka.producer.properties.max.in.flight.requests.per.connection" : "5",
+
+        "spring.kafka.consumer.bootstrap-servers" : "${DOCKER_HOST_IP:-localhost}:${KAFKA_BROKER_1_EXTERNAL_PORT},${DOCKER_HOST_IP:-localhost}:${KAFKA_BROKER_2_EXTERNAL_PORT},${DOCKER_HOST_IP:-localhost}:${KAFKA_BROKER_3_EXTERNAL_PORT}",
+        "spring.kafka.consumer.key-deserializer" : "org.springframework.kafka.support.serializer.ErrorHandlingDeserializer",
+        "spring.kafka.consumer.value-deserializer" : "org.springframework.kafka.support.serializer.ErrorHandlingDeserializer",
+        "spring.kafka.consumer.group-id" : "product-created-events",
+        "spring.kafka.producer.properties.spring.json.trusted.packages" : "*",
+        "spring.kafka.producer.properties.spring.deserializer.key.delegate.class" : "org.apache.kafka.common.serialization.StringDeserializer",
+        "spring.kafka.producer.properties.spring.deserializer.value.delegate.class" : "org.springframework.kafka.support.serializer.JsonDeserializer"
+      }'
+    volumes:
+      - .m2:/root/order-service/
+    stdin_open: true
+    tty: true
+
+networks:
+  order-service:
+    name: microservices_network
+    external: true

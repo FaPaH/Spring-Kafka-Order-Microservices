@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 public class OrderItems {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(name = "product_name", nullable = false)
