@@ -1,0 +1,29 @@
+version: "3.8"
+
+name: stock-postgresdb
+
+services:
+  stock-postgresdb:
+    container_name: stock-postgresdb
+    image: "postgres"
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRESDB_USER}
+      POSTGRES_PASSWORD: ${POSTGRESDB_ROOT_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_STOCK_DATABASE}
+#      - POSTGRES_MULTIPLE_DATABASES= ${POSTGRES_STOCK_DATABASE},${POSTGRES_ORDER_DATABASE}
+    networks:
+      - stock-db
+    expose:
+      - ${POSTGRESDB_DOCKER_STOCKDB_PORT}
+    ports:
+      - ${POSTGRESDB_LOCAL_STOCKDB_PORT}:${POSTGRESDB_DOCKER_STOCKDB_PORT}
+    volumes:
+#      - ./multiple-databases.sh:/docker-entrypoint-initdb.d/multiple-databases.sh
+      - .db:/var/lib/postgres/stockdb
+    command: -p ${POSTGRESDB_DOCKER_STOCKDB_PORT}
+
+networks:
+  stock-db:
+    name: kafka-network
+    external: true

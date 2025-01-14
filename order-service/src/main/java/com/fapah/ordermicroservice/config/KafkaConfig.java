@@ -15,7 +15,7 @@ public class KafkaConfig {
         return TopicBuilder.name("order-created-events-topic")
                 .partitions(3)
                 .replicas(3)
-                .configs(Map.of("min.insync.replicas", "2"))
+                .configs(Map.of("min.insync.replicas", "1"))
                 .build();
     }
 
@@ -24,7 +24,7 @@ public class KafkaConfig {
         return TopicBuilder.name("order-checked-events-topic")
                 .partitions(3)
                 .replicas(3)
-                .configs(Map.of("min.insync.replicas", "2"))
+                .configs(Map.of("min.insync.replicas", "1"))
                 .build();
     }
 }

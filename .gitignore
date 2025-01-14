@@ -42,3 +42,7 @@ build/
 
 ### Log ###
 **/logs
+
+.db
+.m2
+.volumes
