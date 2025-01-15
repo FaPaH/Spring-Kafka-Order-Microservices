@@ -20,7 +20,7 @@ services:
       args:
         order_port: ${SPRING_LOCAL_ORDER_SERVICE_PORT}
     ports:
-      - ${SPRING_LOCAL_ORDER_SERVICE_PORT}:${SPRING_LOCAL_ORDER_SERVICE_PORT}
+      - ${SPRING_LOCAL_ORDER_SERVICE_PORT}:${SPRING_DOCKER_ORDER_SERVICE_PORT}
     environment:
       SPRING_APPLICATION_JSON: '{ 
               "spring.datasource.url"  : "jdbc:postgresql://${POSTGRES_ORDER_DATABASE}:${POSTGRESDB_LOCAL_ORDERDB_PORT}/${POSTGRES_ORDER_DATABASE}",
@@ -29,7 +29,7 @@ services:
               "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
               "spring.jpa.hibernate.ddl-auto" : "update",
               
-              "spring.kafka.bootstrap-servers" : "kafka-1:9092,kafka-2:9092,kafka-3:9092"
+              "spring.kafka.bootstrap-servers" : "kafka-1:${KAFKA_BROKER_PORT},kafka-2:${KAFKA_BROKER_PORT},kafka-3:${KAFKA_BROKER_PORT}"
             }'
     volumes:
       - .m2:/root/order-service/
