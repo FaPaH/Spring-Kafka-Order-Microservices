@@ -1,0 +1,27 @@
+version: "3.8"
+
+name: orderdb
+
+networks:
+  orderdb:
+    name: local-network
+    external: true
+
+services:
+  orderdb:
+    container_name: orderdb
+    image: "postgres:latest"
+    networks:
+      - orderdb
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRESDB_USER}
+      POSTGRES_PASSWORD: ${POSTGRESDB_ROOT_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_ORDER_DATABASE}
+    expose:
+      - ${POSTGRESDB_LOCAL_ORDERDB_PORT}
+    ports:
+      - ${POSTGRESDB_LOCAL_ORDERDB_PORT}:${POSTGRESDB_DOCKER_ORDERDB_PORT}
+    volumes:
+      - .db:/var/lib/postgres/orderdb
+    command: -p ${POSTGRESDB_LOCAL_ORDERDB_PORT}

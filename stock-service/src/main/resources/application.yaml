@@ -6,7 +6,7 @@ spring:
     import: optional:file:.env[.properties]
   #Postgres properties
   datasource:
-    url: jdbc:postgresql://localhost:${POSTGRESDB_LOCAL_STOCKDB_PORT}/${POSTGRES_STOCK_DATABASE}
+    url: jdbc:postgresql://${POSTGRES_STOCK_DATABASE}:${POSTGRESDB_LOCAL_STOCKDB_PORT}/${POSTGRES_STOCK_DATABASE}
     username: ${POSTGRESDB_USER}
     password: ${POSTGRESDB_ROOT_PASSWORD}
   jpa:
@@ -21,7 +21,7 @@ spring:
     #Kafka producer properties
     producer:
       acks: all
-      bootstrap-servers: localhost:${KAFKA_BROKER_1_EXTERNAL_PORT},localhost:${KAFKA_BROKER_2_EXTERNAL_PORT},localhost:${KAFKA_BROKER_3_EXTERNAL_PORT}
+      bootstrap-servers: kafka-1:9092,kafka-2:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
@@ -32,7 +32,7 @@ spring:
         "[max.in.flight.requests.per.connection]": "5"
     #Kafka consumer properties
     consumer:
-      bootstrap-servers: localhost:${KAFKA_BROKER_1_EXTERNAL_PORT},localhost:${KAFKA_BROKER_2_EXTERNAL_PORT},localhost:${KAFKA_BROKER_3_EXTERNAL_PORT}
+      bootstrap-servers: kafka-1:9092,kafka-2:9092
       key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       group-id: product-checked-events

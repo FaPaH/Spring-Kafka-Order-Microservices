@@ -1,0 +1,35 @@
+version: "3.8"
+
+name: stock-service
+
+networks:
+  stock-service:
+    name: local-network
+    external: true
+
+services:
+  stock-service:
+    container_name: stock-service
+    networks:
+      - stock-service
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile-stock
+      args:
+        order_port: ${SPRING_LOCAL_STOCK_SERVICE_PORT}
+    ports:
+      - ${SPRING_LOCAL_STOCK_SERVICE_PORT}:${SPRING_LOCAL_STOCK_SERVICE_PORT}
+    environment:
+      SPRING_APPLICATION_JSON: '{ 
+              "spring.datasource.url"  : "jdbc:postgresql://${POSTGRES_STOCK_DATABASE}:${POSTGRESDB_LOCAL_STOCKDB_PORT}/${POSTGRES_STOCK_DATABASE}",
+              "spring.datasource.username" : "${POSTGRESDB_USER}",
+              "spring.datasource.password" : "${POSTGRESDB_ROOT_PASSWORD}",
+              "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
+              "spring.jpa.hibernate.ddl-auto" : "update",
+              
+              "spring.kafka.bootstrap-servers" : "kafka-1:9092,kafka-2:9092,kafka-3:9092"
+            }'
+    volumes:
+      - .m2:/root/order-service/
