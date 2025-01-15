@@ -1,6 +1,7 @@
 For starting, create .env file in main folder with params params below and write all values that you want to be after =. <br>
 
 #.env file <br>
+#All values must be unique <br>
 POSTGRESDB_USER= <br>
 POSTGRESDB_ROOT_PASSWORD= <br>
 POSTGRES_ORDER_DATABASE= <br>
