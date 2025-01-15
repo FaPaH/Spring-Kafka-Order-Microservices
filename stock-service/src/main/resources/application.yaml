@@ -1,7 +1,3 @@
-#Server properties
-server:
-  port: ${SPRING_LOCAL_ORDER_SERVICE_PORT}
-
 spring:
   #Application properties
   application:
@@ -10,7 +6,7 @@ spring:
     import: optional:file:.env[.properties]
   #Postgres properties
   datasource:
-    url: jdbc:postgresql://localhost:${POSTGRESDB_LOCAL_ORDERDB_PORT}/${POSTGRES_ORDER_DATABASE}
+    url: jdbc:postgresql://localhost:${POSTGRESDB_LOCAL_STOCKDB_PORT}/${POSTGRES_STOCK_DATABASE}
     username: ${POSTGRESDB_USER}
     password: ${POSTGRESDB_ROOT_PASSWORD}
   jpa:
@@ -25,23 +21,26 @@ spring:
     #Kafka producer properties
     producer:
       acks: all
-      bootstrap-servers: localhost:${KAFKA_BROKER_1_EXTERNAL_PORT},localhost:${KAFKA_BROKER_2_EXTERNAL_PORT}
+      bootstrap-servers: localhost:${KAFKA_BROKER_1_EXTERNAL_PORT},localhost:${KAFKA_BROKER_2_EXTERNAL_PORT},localhost:${KAFKA_BROKER_3_EXTERNAL_PORT}
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        delivery.timeout.ms: "10000"
-        linger.ms: "0"
-        request.timeout.ms: "5000"
-        enable.idempotence: "true"
-        max.in.flight.requests.per.connection: "5"
+        "[delivery.timeout.ms]": "10000"
+        "[linger.ms]": "0"
+        "[request.timeout.ms]": "5000"
+        "[enable.idempotence]": "true"
+        "[max.in.flight.requests.per.connection]": "5"
     #Kafka consumer properties
     consumer:
-      bootstrap-servers: localhost:${KAFKA_BROKER_1_EXTERNAL_PORT},localhost:${KAFKA_BROKER_2_EXTERNAL_PORT}
+      bootstrap-servers: localhost:${KAFKA_BROKER_1_EXTERNAL_PORT},localhost:${KAFKA_BROKER_2_EXTERNAL_PORT},localhost:${KAFKA_BROKER_3_EXTERNAL_PORT}
       key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
-      group-id: product-created-events
+      group-id: product-checked-events
       properties:
         spring.json.trusted.packages: '*'
         spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
         spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
 
+#Server properties
+server:
+  port: ${SPRING_LOCAL_STOCK_SERVICE_PORT}

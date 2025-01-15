@@ -1,7 +1,9 @@
 package com.fapah.ordermicroservice.service;
 
+import com.fapah.core.dto.ItemsDto;
+import com.fapah.core.event.OrderCheckedEvent;
+import com.fapah.core.event.OrderCreateEvent;
 import com.fapah.ordermicroservice.dto.OrderDto;
-import com.fapah.ordermicroservice.dto.OrderCreateEvent;
 import com.fapah.ordermicroservice.entity.Order;
 import com.fapah.ordermicroservice.entity.OrderItems;
 import com.fapah.ordermicroservice.repository.OrderRepository;
@@ -29,25 +31,22 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public String save(OrderCreateEvent orderCreateEvent) {
+    public String save(OrderCheckedEvent orderCheckedEvent) {
         try {
             log.info("Creating new order");
 
-            Order order = new Order();
-            order.setOrderCode(orderCreateEvent.getOrderId());
-            List<OrderItems> orderItems = orderCreateEvent.getOrderItemsDto()
-                    .stream()
-                    .map(orderItemsDto -> modelMapper.map(orderItemsDto, OrderItems.class))
-                    .toList();
-            order.setIsCanceled(false);
-            order.setIsReceived(false);
-            order.setOrderItems(orderItems);
+            Order order = Order.builder()
+                    .orderCode(orderCheckedEvent.getOrderId())
+                    .orderItems(dtoToEntity(orderCheckedEvent.getInStockItems()))
+                    .isCanceled(Boolean.FALSE)
+                    .isReceived(Boolean.FALSE)
+                    .build();
 
             log.info("Saving new order {}", order);
 
             return orderRepository.saveAndFlush(order).getOrderCode();
         } catch (RuntimeException e) {
-            log.warn("Failed to save order {}, {}", orderCreateEvent, e.getMessage());
+            log.error("Failed to save order {}, {}", orderCheckedEvent, e.getMessage());
             return e.getMessage();
         }
     }
@@ -66,7 +65,7 @@ public class OrderServiceImpl implements OrderService {
                     .map(value -> modelMapper.map(value, OrderDto.class))
                     .toList();
         } catch (RuntimeException e) {
-            log.warn("Failed to get all orders {}", e.getMessage());
+            log.error("Failed to get all orders {}", e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -79,7 +78,7 @@ public class OrderServiceImpl implements OrderService {
             log.info("Found order {}", order.get());
             return order.map(value -> modelMapper.map(value, OrderDto.class)).get();
         } catch (RuntimeException e) {
-            log.warn("Failed to find order {}", orderCode);
+            log.error("Failed to find order {}", orderCode);
             return null;
         }
     }
@@ -114,6 +113,7 @@ public class OrderServiceImpl implements OrderService {
             orderRepository.saveAndFlush(order);
             return "Order received successfully";
         } catch (NoSuchElementException e) {
+            log.warn("Order not found with such code {}", orderCode);
             return "Order not found";
         }
     }
@@ -136,6 +136,7 @@ public class OrderServiceImpl implements OrderService {
             orderRepository.saveAndFlush(order);
             return "Order canceled successfully";
         } catch (NoSuchElementException e) {
+            log.warn("Order not found with such code {}", orderCode);
             return "Order not found";
         }
     }
@@ -150,11 +151,23 @@ public class OrderServiceImpl implements OrderService {
             log.info("Sending order event {}", orderCreateEvent);
             SendResult<String, OrderCreateEvent> result = kafkaTemplate
                     .send("order-created-events-topic", orderKey, orderCreateEvent).get();
+
             log.info("Event sent successfully {}", result.getRecordMetadata());
             return result.getProducerRecord().value().getOrderId();
         } catch (InterruptedException | ExecutionException e) {
-            log.warn("Failed to send order event {} {}", orderCreateEvent, e.getMessage());
+            log.error("Failed to send order event {} {}", orderCreateEvent, e.getMessage());
             return "Oops! Something went wrong. Try again later";
+        }
+    }
+
+    private List<OrderItems> dtoToEntity(List<ItemsDto> orderItemsDtoList) {
+        try {
+            return orderItemsDtoList.stream()
+                    .map(orderItemsDto -> modelMapper.map(orderItemsDto, OrderItems.class))
+                    .toList();
+        } catch (RuntimeException e) {
+            log.error("Failed to map dto {} to entity {}", orderItemsDtoList, e.getMessage());
+            return null;
         }
     }
 }

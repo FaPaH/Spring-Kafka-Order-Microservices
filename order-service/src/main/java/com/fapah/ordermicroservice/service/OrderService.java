@@ -1,13 +1,14 @@
 package com.fapah.ordermicroservice.service;
 
-import com.fapah.ordermicroservice.dto.OrderCreateEvent;
+import com.fapah.core.event.OrderCheckedEvent;
+import com.fapah.core.event.OrderCreateEvent;
 import com.fapah.ordermicroservice.dto.OrderDto;
 
 import java.util.List;
 
 public interface OrderService {
 
-    String save(OrderCreateEvent orderCreateEvent);
+    String save(OrderCheckedEvent orderCheckedEvent);
 
     List<OrderDto> findAll();
 

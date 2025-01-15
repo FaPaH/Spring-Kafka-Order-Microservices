@@ -24,5 +24,4 @@ public class OrderMicroserviceApplication {
 				.setFieldAccessLevel(Configuration.AccessLevel.PRIVATE);
 		return modelMapper;
 	}
-
 }
