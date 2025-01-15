@@ -1,0 +1,27 @@
+version: "3.8"
+
+name: stockdb
+
+networks:
+  stockdb:
+    name: local-network
+    external: true
+
+services:
+  stockdb:
+    container_name: stockdb
+    image: "postgres:latest"
+    networks:
+      - stockdb
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRESDB_USER}
+      POSTGRES_PASSWORD: ${POSTGRESDB_ROOT_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_STOCK_DATABASE}
+    expose:
+      - ${POSTGRESDB_LOCAL_STOCKDB_PORT}
+    ports:
+      - ${POSTGRESDB_LOCAL_STOCKDB_PORT}:${POSTGRESDB_DOCKER_STOCKDB_PORT}
+    volumes:
+      - .db:/var/lib/postgres/stockdb
+    command: -p ${POSTGRESDB_LOCAL_STOCKDB_PORT}
