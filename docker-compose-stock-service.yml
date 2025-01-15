@@ -29,7 +29,7 @@ services:
               "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.PostgreSQLDialect",
               "spring.jpa.hibernate.ddl-auto" : "update",
               
-              "spring.kafka.bootstrap-servers" : "kafka-1:9092,kafka-2:9092,kafka-3:9092"
+              "spring.kafka.bootstrap-servers" : "kafka-1:${KAFKA_BROKER_PORT},kafka-2:${KAFKA_BROKER_PORT},kafka-3:${KAFKA_BROKER_PORT}"
             }'
     volumes:
       - .m2:/root/order-service/

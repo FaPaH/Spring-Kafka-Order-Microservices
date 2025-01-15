@@ -21,7 +21,7 @@ spring:
     #Kafka producer properties
     producer:
       acks: all
-      bootstrap-servers: kafka-1:9092,kafka-2:9092
+      bootstrap-servers: kafka-1:${KAFKA_BROKER_PORT},kafka-2:${KAFKA_BROKER_PORT}
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
@@ -32,7 +32,7 @@ spring:
         "[max.in.flight.requests.per.connection]": "5"
     #Kafka consumer properties
     consumer:
-      bootstrap-servers: kafka-1:9092,kafka-2:9092
+      bootstrap-servers: kafka-1:${KAFKA_BROKER_PORT},kafka-2:${KAFKA_BROKER_PORT}
       key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       group-id: product-checked-events
