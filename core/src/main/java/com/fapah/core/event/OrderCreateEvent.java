@@ -1,36 +1,19 @@
 package com.fapah.core.event;
 
 import com.fapah.core.dto.ItemsDto;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class OrderCreateEvent {
 
     private String orderId;
 
     private List<ItemsDto> orderItemsDto;
 
-    public OrderCreateEvent() {
-    }
-
-    public OrderCreateEvent(String orderId, List<ItemsDto> orderItemsDto) {
-        this.orderId = orderId;
-        this.orderItemsDto = orderItemsDto;
-    }
-
-    public String getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
-    }
-
-    public List<ItemsDto> getOrderItemsDto() {
-        return orderItemsDto;
-    }
-
-    public void setOrderItemsDto(List<ItemsDto> orderItemsDto) {
-        this.orderItemsDto = orderItemsDto;
-    }
 }

@@ -52,7 +52,7 @@ public class OrderController {
             log.warn("Order code is blank");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        return ResponseEntity.ok().body(orderService.findByCode(orderCode));
+        return ResponseEntity.ok().body(orderService.findOrderByCode(orderCode));
     }
 
     @Operation(responses = {
@@ -68,7 +68,7 @@ public class OrderController {
             log.warn("Order code is blank");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        return ResponseEntity.ok().body(orderService.delete(orderCode));
+        return ResponseEntity.ok().body(orderService.deleteOrder(orderCode));
     }
 
     @Tag(name = "post", description = "POST methods of orders")

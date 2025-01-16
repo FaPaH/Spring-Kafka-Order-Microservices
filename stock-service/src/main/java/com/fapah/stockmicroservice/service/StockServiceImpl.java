@@ -63,7 +63,7 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public List<Product> findAllByOrderByNameAsc() {
+    public List<Product> findAll() {
         List<Product> products = stockRepository.findAllByOrderByNameAsc();
         if (products.isEmpty()) {
             log.error("No products found");
@@ -77,7 +77,12 @@ public class StockServiceImpl implements StockService {
     @Transactional
     public String updateProduct(Product product) {
         try {
-            stockRepository.updateProductPriceByName(regexName(product.getName()), product.getPrice(), product.getQuantity());
+            stockRepository.updateProductPriceByName(regexName(
+                    product.getName()),
+                    product.getPrice(),
+                    product.getQuantity()
+            );
+
             log.info("Product with name {} has been updated to {}", product.getName(), product);
             return "Product updated successfully";
         } catch (RuntimeException e) {
@@ -122,6 +127,7 @@ public class StockServiceImpl implements StockService {
     public void sendOrderCheckedEvent(OrderCheckedEvent orderCheckedEvent) {
         try {
             log.info("Sending order checked event {}", orderCheckedEvent);
+
             SendResult<String, OrderCheckedEvent> result = kafkaTemplate
                     .send("order-checked-events-topic", orderCheckedEvent.getOrderId(), orderCheckedEvent).get();
 
