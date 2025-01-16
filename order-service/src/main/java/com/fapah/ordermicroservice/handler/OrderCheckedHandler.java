@@ -20,6 +20,6 @@ public class OrderCheckedHandler {
     @KafkaHandler
     public void handle(OrderCheckedEvent orderCheckedEvent) {
         log.info("Received checked order response: {}", orderCheckedEvent.getOrderId());
-        orderService.save(orderCheckedEvent);
+        orderService.saveOrder(orderCheckedEvent);
     }
 }
