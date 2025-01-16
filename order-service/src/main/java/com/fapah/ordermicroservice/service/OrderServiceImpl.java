@@ -9,6 +9,7 @@ import com.fapah.ordermicroservice.entity.OrderItems;
 import com.fapah.ordermicroservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.modelmapper.ModelMapper;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -31,7 +32,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public String save(OrderCheckedEvent orderCheckedEvent) {
+    public String saveOrder(OrderCheckedEvent orderCheckedEvent) {
         try {
             log.info("Creating new order");
 
@@ -56,11 +57,13 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderDto> findAll() {
         try {
             List<Order> orders = orderRepository.findAll();
+
             if (orders.isEmpty()) {
                 log.info("No orders found");
                 return Collections.emptyList();
             }
             log.info("Found {} orders", orders.size());
+
             return orders.stream()
                     .map(value -> modelMapper.map(value, OrderDto.class))
                     .toList();
@@ -72,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public OrderDto findByCode(String orderCode) {
+    public OrderDto findOrderByCode(String orderCode) {
         try {
             Optional<Order> order = orderRepository.findByCode(orderCode);
             log.info("Found order {}", order.get());
@@ -85,12 +88,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public String delete(String orderCode) {
+    public String deleteOrder(String orderCode) {
         try {
-            orderRepository.delete(modelMapper.map(this.findByCode(orderCode), Order.class));
+            orderRepository.delete(modelMapper.map(this.findOrderByCode(orderCode), Order.class));
             return "Order deleted successfully";
         } catch (NoSuchElementException e) {
-            log.warn("Failed to delete order {}", orderCode);
+            log.warn("No such element with code {} in db", orderCode, e);
             return "Order not found";
         }
     }
@@ -99,7 +102,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public String setReceived(String orderCode) {
         try {
-            Order order = modelMapper.map(this.findByCode(orderCode), Order.class);
+            Order order = modelMapper.map(this.findOrderByCode(orderCode), Order.class);
             if (order.getIsReceived()) {
                 log.info("Order {} is already received", order);
                 return "Order is already received";
@@ -113,7 +116,7 @@ public class OrderServiceImpl implements OrderService {
             orderRepository.saveAndFlush(order);
             return "Order received successfully";
         } catch (NoSuchElementException e) {
-            log.warn("Order not found with such code {}", orderCode);
+            log.warn("No such element with code {} in db", orderCode, e);
             return "Order not found";
         }
     }
@@ -122,7 +125,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public String setCanceled(String orderCode) {
         try {
-            Order order = modelMapper.map(this.findByCode(orderCode), Order.class);
+            Order order = modelMapper.map(this.findOrderByCode(orderCode), Order.class);
             if (order.getIsReceived()) {
                 log.info("Order {} is received. Cant receive canceled orders", order);
                 return "Order is received. Cant receive canceled orders";
@@ -136,7 +139,7 @@ public class OrderServiceImpl implements OrderService {
             orderRepository.saveAndFlush(order);
             return "Order canceled successfully";
         } catch (NoSuchElementException e) {
-            log.warn("Order not found with such code {}", orderCode);
+            log.warn("No such element with code {} in db", orderCode, e);
             return "Order not found";
         }
     }
@@ -148,11 +151,22 @@ public class OrderServiceImpl implements OrderService {
             String orderKey = UUID.randomUUID().toString();
 
             orderCreateEvent.setOrderId(orderKey);
+
             log.info("Sending order event {}", orderCreateEvent);
+
+            ProducerRecord<String, OrderCreateEvent> record = new ProducerRecord<>(
+                    "order-created-events-topic",
+                    orderKey,
+                    orderCreateEvent
+            );
+
+            record.headers().add("messageId", UUID.randomUUID().toString().getBytes());
+
             SendResult<String, OrderCreateEvent> result = kafkaTemplate
-                    .send("order-created-events-topic", orderKey, orderCreateEvent).get();
+                    .send(record).get();
 
             log.info("Event sent successfully {}", result.getRecordMetadata());
+
             return result.getProducerRecord().value().getOrderId();
         } catch (InterruptedException | ExecutionException e) {
             log.error("Failed to send order event {} {}", orderCreateEvent, e.getMessage());

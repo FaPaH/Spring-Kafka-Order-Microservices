@@ -17,7 +17,7 @@ public interface StockService {
 
     String saveProduct(Product product);
 
-    List<Product> findAllByOrderByNameAsc();
+    List<Product> findAll();
 
     String updateProduct(Product product);
 

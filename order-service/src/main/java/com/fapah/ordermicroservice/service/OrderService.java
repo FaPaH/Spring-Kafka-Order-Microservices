@@ -8,13 +8,13 @@ import java.util.List;
 
 public interface OrderService {
 
-    String save(OrderCheckedEvent orderCheckedEvent);
+    String saveOrder(OrderCheckedEvent orderCheckedEvent);
 
     List<OrderDto> findAll();
 
-    OrderDto findByCode(String orderCode);
+    OrderDto findOrderByCode(String orderCode);
 
-    String delete(String orderCode);
+    String deleteOrder(String orderCode);
 
     String setReceived(String orderCode);
 
