@@ -1,3 +1,5 @@
+This is one of my PET-project, its 2 RESTful Spring Boot microservices which communicates between using Kafka. Every microservice have own db on PostgreSQL. Everything is wset up in docker.
+
 For starting, create .env file in main folder with params params below and write all values that you want to be after =. <br>
 
 #.env file <br>
